@@ -1,0 +1,4 @@
+{
+  "last_transactions": "",
+  "last_external_data": ""
+}
