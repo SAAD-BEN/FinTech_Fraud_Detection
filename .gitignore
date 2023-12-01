@@ -1,2 +1,8 @@
 .env
+
+# Ignore data files
 *.json
+
+# Ignore Hive folders
+hdfs/
+metastore-postgresql/

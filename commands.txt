@@ -1,0 +1,18 @@
+-------------------Docker Run-----------------
+----------------------------------------------
+// Run the images
+docker-compose -f docker-compose.yml up -d
+
+// Stop the images
+docker-compose -f docker-compose.yml down
+
+------------------Hive commands---------------
+----------------------------------------------
+// Enter the hive vm bash
+docker exec -it hive-server /bin/bash
+
+// Go into the database and tables creation folder
+cd ../transaction_storage/
+
+// Execute the database and tables creation script
+hive -f transaction_tables.hql

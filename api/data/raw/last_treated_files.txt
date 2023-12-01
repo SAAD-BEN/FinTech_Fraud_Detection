@@ -1,4 +1,3 @@
 {
-  "last_transactions": "",
-  "last_external_data": ""
+  "last_transactions": "C:/Users/YouCode/Desktop/saad/2023-11-27_FinTech_Fraud_Detection_Hive/FinTech_Fraud_Detection/api/data/raw/transactions/transactions_20231201_105827.json"
 }

@@ -27,19 +27,17 @@ def get_transactions():
     
     if transactions_file:
         transactions_data = json.load(open(transactions_file, 'r'))
-        update_last_treated_file(transactions_file, last_treated_file['last_external_data'])
+        update_last_treated_file(transactions_file)
         return jsonify(transactions_data)
     else:
         return jsonify({"error": "No transactions data available."}), 404
 
 @app.route('/external_data', methods=['GET'])
 def get_external_data():
-    last_treated_file = load_last_treated_file()
-    external_data_file = get_next_file(data_folder + "external_data/", last_treated_file['last_external_data'].split('/')[-1])
+    external_data_file = get_latest_file(data_folder + "external_data/")
     
     if external_data_file:
         external_data = json.load(open(external_data_file, 'r'))
-        update_last_treated_file(last_treated_file['last_transactions'], external_data_file)
         return jsonify(external_data)
     else:
         return jsonify({"error": "No external data available."}), 404
@@ -61,14 +59,14 @@ def get_next_file(directory, last_file):
     return None
 
 def load_last_treated_file():
-    last_treated_data = {"last_transactions": "", "last_external_data": ""}
+    last_treated_data = {"last_transactions": ""}
     if os.path.exists(last_treated_file_path):
         with open(last_treated_file_path, 'r') as file:
             last_treated_data = json.load(file)
     return last_treated_data
 
-def update_last_treated_file(last_transactions, last_external_data):
-    last_treated_data = {"last_transactions": last_transactions, "last_external_data": last_external_data}
+def update_last_treated_file(last_transactions):
+    last_treated_data = {"last_transactions": last_transactions}
     with open(last_treated_file_path, 'w') as file:
         json.dump(last_treated_data, file, indent=2)
 

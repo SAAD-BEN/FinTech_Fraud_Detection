@@ -16,6 +16,34 @@ def save_data(data, file_path):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=2)
 
+def load_data(file_path):
+    if os.path.exists(file_path):
+        return json.load(open(file_path, 'r'))
+    return None
+
+def merge_external_data(old_external_data, new_external_data):
+    if not old_external_data:
+        return new_external_data
+
+    merged_external_data = {
+        "blacklist_info": list(set(old_external_data.get("blacklist_info", []) + new_external_data.get("blacklist_info", []))),
+        "credit_scores": old_external_data.get("credit_scores", {}),
+        "fraud_reports": old_external_data.get("fraud_reports", {})
+    }
+
+    # Merge credit_scores
+    for customer_id, credit_score in new_external_data.get("credit_scores", {}).items():
+        merged_external_data["credit_scores"][customer_id] = credit_score
+
+    # Merge fraud_reports
+    for customer_id, fraud_report in new_external_data.get("fraud_reports", {}).items():
+        if customer_id in merged_external_data["fraud_reports"]:
+            merged_external_data["fraud_reports"][customer_id] += fraud_report
+        else:
+            merged_external_data["fraud_reports"][customer_id] = fraud_report
+
+    return merged_external_data
+
 def random_date(start, end):
     return start + timedelta(
         seconds=random.randint(0, int((end - start).total_seconds())))
@@ -37,7 +65,7 @@ def generate_high_frequency_transactions(customer, current_time, num_transaction
         })
     return transactions
 
-def generate_data(num_transactions, num_customers, old_customers=[]):
+def generate_data(num_transactions, num_customers, old_customers=[], old_external_data=None):
     current_time = datetime.now()
     customers = old_customers.copy()  # Include old customers in the starting list
 
@@ -86,7 +114,10 @@ def generate_data(num_transactions, num_customers, old_customers=[]):
         external_data["credit_scores"][customer['customer_id']] = random.randint(300, 850)
         external_data["fraud_reports"][customer['customer_id']] = random.randint(0, 5)
 
-    return all_transactions, customers, external_data
+    # Merge new external data with old external data
+    merged_external_data = merge_external_data(old_external_data, external_data)
+
+    return all_transactions, customers, merged_external_data
 
 if __name__ == '__main__':
     while True:
@@ -95,8 +126,11 @@ if __name__ == '__main__':
         if os.path.exists(data_folder + "customers/customers.json"):
             old_customers = json.load(open(data_folder + "customers/customers.json", 'r'))
 
+        # Load the old external data if it exists
+        old_external_data = load_data(data_folder + "external_data/external_data.json")
+
         # Generate 10 new transactions and 5 new users every 10 minutes
-        new_transactions, new_customers, new_external_data = generate_data(10, 5, old_customers=old_customers)
+        new_transactions, new_customers, new_external_data = generate_data(10, 5, old_customers=old_customers, old_external_data=old_external_data)
 
         # Save new customers data
         customers_file_name = f"customers.json"
@@ -107,7 +141,7 @@ if __name__ == '__main__':
         save_data(new_transactions, data_folder + "transactions/" + transactions_file_name)
 
         # Save new external data
-        external_data_file_name = f"external_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        external_data_file_name = f"external_data.json"
         save_data(new_external_data, data_folder + "external_data/" + external_data_file_name)
 
         print(f"Generated {len(new_transactions)} transactions and {len(new_customers)} customers at {datetime.now()}")
