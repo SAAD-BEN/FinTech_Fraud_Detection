@@ -6,3 +6,4 @@ thrift
 thrift_sasl
 requests
 threading
+airflow
